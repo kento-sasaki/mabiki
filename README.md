@@ -4,7 +4,7 @@
 
 効率化・自動化をあえて排除し、ユーザーが自分の意志でタスクをコントロールする **「デジタル摩擦」** をコア価値とする。一般的な Todo アプリが自動繰り越しやワンタップ移動で消し去る「本当に今日やるべきか？」という問い直しを、**手で打ち直す移行** と **演出付きの削除** によって体験に残すことを狙う。
 
-- **開発手法**: [Spec-Driven Development（SDD）](./docs/guides/spec-driven-development.md) — 仕様を一次成果物に据え、What/Why → How → タスク → 実装の順で進める。
+- **開発手法**: [Spec-Driven Development（SDD）](./docs/guides/spec-driven-development.md) — 仕様を一次成果物に据え、What/Why → How → 実装（GitHub Issue でタスク管理）の順で進める。憲法は [constitution.md](./docs/guides/constitution.md)。
 - **現状**: 仕様策定フェーズ（MVP 仕様は Draft、実装前）。
 
 ## ドキュメント
@@ -24,7 +24,8 @@
 |---|---|
 | [spec.md](./docs/specs/001-mabiki-mvp/spec.md) | What / Why（要件・ユーザーストーリー・受入基準） |
 | [plan.md](./docs/specs/001-mabiki-mvp/plan.md) | How（技術スタック・データモデル・設計判断） |
-| [tasks.md](./docs/specs/001-mabiki-mvp/tasks.md) | 実行可能なタスク分解 |
+
+個別タスクは [GitHub Issue](https://github.com/kento-sasaki/mabiki/issues) で管理する（`spec.md` / `plan.md` から `.claude/skills/creating-github-issue` で切り出し）。
 
 ## はじめに読むもの
 

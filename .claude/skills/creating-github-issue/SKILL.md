@@ -2,8 +2,10 @@
 name: creating-github-issue
 description: >
   mabiki リポジトリに GitHub Issue を作成する。
-  ユーザーの概要説明と docs/specs/<NNN>-<feature>/{spec.md, plan.md, tasks.md} の文脈から
+  ユーザーの概要説明と docs/specs/<NNN>-<feature>/{spec.md, plan.md} の文脈から
   task.yml テンプレート形式で Issue 本文を自動生成し、`gh issue create` で作成する。
+  mabiki は tasks.md を持たず、spec.md / plan.md から直接 Issue を切り出して
+  タスクを管理する運用（→ docs/guides/spec-driven-development.md §3.3）。
   「Issue を作りたい」「タスクを登録して」「GitHub Issue を作成して」と言われたときに使う。
 ---
 
@@ -57,12 +59,21 @@ description: >
 
 | ファイル                                          | 反映先セクション                                                          |
 | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| `docs/specs/<NNN>-<feature>/spec.md`              | 概要、背景・目的、完了条件（受入基準と整合させる）                        |
-| `docs/specs/<NNN>-<feature>/plan.md`              | 関連ファイル・コンポーネント、検証方法、参考パターン（技術アーキテクチャ）|
-| `docs/specs/<NNN>-<feature>/tasks.md`             | 作業内容、参考情報（紐付くタスク ID）                                     |
+| `docs/specs/<NNN>-<feature>/spec.md`              | 概要、背景・目的、完了条件（受入基準と整合させる）、作業内容（ユーザーストーリーの粒度から導出）|
+| `docs/specs/<NNN>-<feature>/plan.md`              | 関連ファイル・コンポーネント、検証方法、参考パターン（技術アーキテクチャ・データモデル・契約から導出）|
+| `docs/guides/constitution.md`                     | 参考パターン（Mabiki の判断基準。Issue が原則 6「Explicit Non-Goals」に抵触していないか確認）|
 | `docs/guides/spec-driven-development.md`          | 参考パターン（SDD のフェーズや品質基準）                                  |
 
 該当する記述がない場合は無理に紐付けず、`_No response_` または該当項目を空にする。SDD 上の根拠資料が必要な場合は `docs/research/` を補助的に参照してよい。
+
+### 2.3 Issue 粒度の判定
+
+mabiki では **「独立して PR にできる作業単位」** を 1 Issue とする（旧 `tasks.md` の T101 相当の粒度）。`plan.md` の §「フェーズ内訳」や Sprint 区切り、`spec.md` のユーザーストーリー（US-N）を参考に、過大／過小な粒度を避ける。
+
+- 過大（1 Issue が大きすぎる）の典型: 「Sprint 1 を全部やる」「Server Actions を全部実装」
+- 過小（1 Issue が小さすぎる）の典型: 「import 文を追加」「変数名を変更」
+
+迷ったときは `AskUserQuestion` で粒度を確認する。
 
 ## Step 3: Issue 内容を自動生成
 
@@ -171,7 +182,7 @@ EOF
 - **概要**: このタスクで何をするかを 1〜2 文で簡潔に。task.yml で `required`。
 - **背景・目的**: なぜ必要か。`docs/specs/<NNN>-<feature>/spec.md` のユーザーストーリー・受入基準、`docs/research/` の根拠資料を要約・参照する。SDD の「Why」を厳密に書く。
 - **関連ファイル・コンポーネント**: 変更・参照が予想されるファイル・SDD アーティファクトを箇条書き。`plan.md` の技術アーキテクチャから拾う。実装初期で未作成のファイルを挙げる場合は「（新規作成）」と明示する。
-- **作業内容**: チェックボックス付きの具体タスク。`tasks.md` に対応する Task ID があれば併記する。task.yml で `required`。
+- **作業内容**: チェックボックス付きの具体タスク。`plan.md` の §「フェーズ内訳」や Sprint 区切り、`spec.md` のユーザーストーリー（US-N）を参照ラベルとして併記してよい（例: `(US-3 / Sprint 1)`）。task.yml で `required`。
 - **完了条件**: 「完了」とみなされる客観的条件。**spec.md の受入基準（acceptance criteria）と矛盾しないこと**。
 - **検証方法**: 動作確認の手順を必ず記載する（Step 4 で必須項目）。mabiki は実装初期で検証コマンドが未整備の段階のため、整備状況に応じて以下を使い分ける。
   - 検証ゲートが整備済み: 該当コマンド（型チェック・テスト・ビルドなど）を記載

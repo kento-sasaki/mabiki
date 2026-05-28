@@ -1,61 +1,58 @@
-# Spec-Driven Development (SDD) ガイド
+# Mabiki の Spec-Driven Development（SDD）ガイド
 
-本プロジェクト「Mabiki」における **Spec-Driven Development（仕様駆動開発、以下 SDD）** の進め方を定義する。本ガイドは [GitHub Spec Kit](https://github.com/github/spec-kit) の方法論をベースに、Claude Code を実装エージェントとして使う前提でまとめている。
+本プロジェクト「Mabiki」における **Spec-Driven Development（仕様駆動開発、以下 SDD）** の進め方を定義する。GitHub Spec Kit の方法論をベースに、**Mabiki の個人開発・Claude Code 連携・GitHub Issue ベースのタスク管理** に合わせて運用する。
 
-**最終更新**: 2026-05-25
-**前提読者**: 本リポジトリで実装を進めるエンジニア／PdM
-
----
-
-## 1. SDD とは何か
-
-SDD は **「仕様（spec）を開発の一次成果物（source of truth）に据える」** 開発手法である。従来の「コードが主、ドキュメントが後追い」という関係を逆転させ、**自然言語で書かれた仕様から実装計画とコードを生成する**。
-
-> コードはもはや「真実」ではなく、仕様という意図を最終的に表現する「ラストワンマイル」になる。
-
-### なぜ SDD なのか（AI コーディング時代の必然）
-
-- **Vibe coding の対極**: その場の思いつきでエージェントに丸投げすると、文脈が散らばり一貫性が崩れる。SDD は構造化された仕様をエージェントに渡すことで、出力品質と再現性を担保する。
-- **意図の明文化**: 「何を・なぜ作るか（What/Why）」を先に固め、「どう作るか（How）」と分離する。これにより手戻りが減る。
-- **変更耐性**: 要件を変えると計画・タスク・コードへ波及的に再生成できる。要件変更を「破壊的なやり直し」ではなく「通常のワークフロー」として扱える。
-
-### 本プロジェクトでの位置づけ
-
-Mabiki は「デジタル摩擦」という繊細な体験価値を核とするため、**何を作るか以上に「なぜその不便さを残すのか」という意図の共有が重要**になる。SDD の「仕様＝意図の契約」という性質は、この種のプロダクトと特に相性が良い。
+**最終更新**: 2026-05-29
+**前提読者**: 本リポジトリで実装を進める開発者本人（個人開発）
+**位置づけ**: 開発の進め方の標準。**判断の根拠**は [constitution.md](./constitution.md)。
 
 ---
 
-## 2. コアワークフロー（4フェーズ）
+## 1. SDD とは何か（Mabiki 文脈で）
 
-Spec Kit のワークフローは **Spec → Plan → Tasks → Implement** の4フェーズ。各フェーズが Markdown アーティファクトを生成し、次フェーズの構造化された入力になる。
+SDD は **「仕様（spec）を開発の一次成果物（source of truth）に据える」** 開発手法。Mabiki でこれを採る理由は、プロダクトの核が「デジタル摩擦」という繊細な体験価値だからである。
+
+> Mabiki では「何を作るか」以上に **「なぜその不便さを残すのか」** という意図の一貫性が成否を分ける。仕様＝意図の契約として明文化することで、Claude Code を含むエージェントに渡しても一貫性が崩れない。
+
+Mabiki で SDD を回す上での前提:
+
+- **個人開発** — レビュアーは自分。フェーズゲートはセルフレビューで運用する。
+- **Claude Code が一次実装エージェント** — 仕様の曖昧さはそのまま実装の曖昧さになる。
+- **GitHub Issue でタスク管理** — 仕様から Issue を切り出し、Issue 単位で実装する。`tasks.md` は持たない。
+- **`docs/research/` が哲学的根拠の一次資料** — 摩擦設計は研究資料を根拠に置く。
+
+---
+
+## 2. ワークフロー（3 フェーズ）
+
+Mabiki の SDD は **Spec → Plan → Implement** の3フェーズ。Spec Kit のデフォルト 4 フェーズから `Tasks` フェーズを抜き、その役割を **GitHub Issue** に移している。
 
 ```
-Constitution（憲法・原則） ── 全フェーズを貫く制約
+┌─────────────────────────────────────────────────────────────┐
+│ Constitution（docs/guides/constitution.md）                 │
+│ 全フェーズを貫く判断基準。逸脱は plan.md で明示・正当化。   │
+└─────────────────────────────────────────────────────────────┘
         │
         ▼
-  1. Specify   → spec.md    What / Why（要件・ユーザーストーリー・受入基準）
+  1. Specify     → spec.md     What / Why（要件・ユーザーストーリー・受入基準）
         │
-   (Clarify)   → 曖昧点を構造化された質問で解消
+   (Clarify)     → spec.md 更新 [NEEDS CLARIFICATION] の解消
         │
-  2. Plan      → plan.md    How（技術アーキテクチャ・データモデル・契約）
+  2. Plan        → plan.md     How（技術アーキテクチャ・データモデル・契約）
         │
-  3. Tasks     → tasks.md   実行可能なタスク分解（依存関係・並列マーク）
-        │
-   (Analyze)   → アーティファクト間の整合性検証
-        │
-  4. Implement → 実装（タスクを順に実行）
+  3. Implement   → GitHub Issue + コード
+                   spec/plan から `.claude/skills/creating-github-issue` で Issue を切り出し、
+                   Issue 単位で実装・PR・マージ
 ```
 
 ### 各フェーズの責務
 
 | フェーズ | 成果物 | 焦点 | やってはいけないこと |
 |---|---|---|---|
-| **Specify** | `spec.md` | What / Why。ユーザーストーリー、受入基準、非機能要件、エッジケース | 技術選定・実装詳細（How）を書く |
-| **Clarify** | `spec.md` 更新 | 曖昧点（`[NEEDS CLARIFICATION]`）の解消 | 勝手に推測で埋める |
-| **Plan** | `plan.md` 他 | How。アーキテクチャ、データモデル、API契約、テスト戦略 | 憲法違反の設計を通す |
-| **Tasks** | `tasks.md` | 依存順に並んだ実行可能タスク。並列可能なものは `[P]` | 粒度の粗すぎるタスク |
-| **Analyze** | レポート | アーティファクト間の矛盾・抜け・曖昧さの検出 | 検証なしで実装へ進む |
-| **Implement** | コード | タスクを順に実行 | 仕様にない投機的機能の追加 |
+| **Specify** | `spec.md` | What / Why。ユーザーストーリー、受入基準、非機能要件、エッジケース、摩擦設計の Why | 技術選定・実装詳細（How）を書く |
+| **Clarify** | `spec.md` 更新 | `[NEEDS CLARIFICATION]` の解消 | 推測で埋める／哲学的判断を `docs/research/` を見ずに決める |
+| **Plan** | `plan.md` | How。アーキテクチャ、データモデル、契約、Constitution Check | 憲法違反の設計を暗黙に通す |
+| **Implement** | GitHub Issue + コード | spec/plan から Issue を切り出し、Issue 単位で実装 | 仕様にない投機的機能の追加、Issue にない作業の混入 |
 
 ---
 
@@ -66,148 +63,138 @@ Constitution（憲法・原則） ── 全フェーズを貫く制約
 「What / Why」に集中する。**技術的な How は書かない。**
 
 主なセクション:
-- 機能の概要と背景（rationale）
+- **概要（What）** と **背景・狙い（Why）**
 - ユーザーストーリーと受入基準（acceptance criteria）
+- スコープ（In Scope / **Out of Scope**）— Constitution の「Explicit Non-Goals」を継承
+- **摩擦設計** — 操作ごとの「狙い」と `docs/research/` への根拠リンク（Constitution 原則 2, 3）
 - 非機能要件
 - エッジケース・エラーハンドリング
-- **不確実性マーカー** `[NEEDS CLARIFICATION: ...]` — 曖昧な点は推測で埋めず明示する
-- 要件の完全性チェックリスト（自己レビュー用ゲート）
+- **不確実性マーカー** `[NEEDS CLARIFICATION: ...]`（Constitution 原則 8）
+- 自己レビュー用チェックリスト
+
+Mabiki 固有の必須項目:
+- 各摩擦設計には **Why（哲学的・体験的根拠）** が明記されているか
+- 摩擦設計には `docs/research/` の該当節への参照があるか
+- Out of Scope に Constitution の禁止リスト（自動繰り越し・一括移動など）が含まれているか
 
 ### 3.2 `plan.md`（実装計画）
 
-「How」を扱う。spec.md を技術アーキテクチャに翻訳する。
+「How」を扱う。`spec.md` を技術アーキテクチャに翻訳する。
 
 主なセクション:
 - 仕様分析サマリ
-- **憲法への準拠検証**（Constitution Check）
-- 技術アーキテクチャと設計判断（その根拠も）
-- 付随ドキュメント生成: `data-model.md`, `contracts/`, `research.md`, `quickstart.md`
-- 実装前ゲート（Simplicity / Anti-Abstraction / Integration-First）
-- フェーズごとの内訳（前提条件と成果物）
-- 複雑度トラッキング（過剰設計の正当化記録）
+- **Constitution Check** — `constitution.md` のチェックリストを必ず実施し、逸脱があれば正当化
+- 技術スタックと設計判断（その根拠も）
+- データモデル
+- API / Server Actions の契約
+- フロントエンド実装のポイント
+- 実装前ゲート（Simplicity / 検証優先など）
+- フェーズ内訳（Sprint 単位の俯瞰）
 
-### 3.3 `tasks.md`（タスク分解）
+Mabiki 固有の必須項目:
+- Constitution Check セクションがあり、各原則について OK / 逸脱が記録されているか
+- スマホファーストの設計判断が明示されているか（原則 5）
+- 摩擦設計の実装方針が `spec.md` の Why と矛盾していないか
 
-plan.md（および data-model.md / contracts/ / research.md）から実行可能なタスクを導出する。
+### 3.3 タスク管理（GitHub Issue）
 
-特徴:
-- 契約・エンティティ・シナリオからタスクを生成
-- 依存関係に基づく順序付け
-- 独立して並列実行できるタスクには `[P]` マーク
-- タスクごとの実装指示
+`tasks.md` は **持たない**。代わりに以下のフローで管理する。
+
+1. `spec.md` と `plan.md` が確定したら、必要な作業を **GitHub Issue** として切り出す
+2. Issue 切り出しは `.claude/skills/creating-github-issue` を使う
+   - `spec.md` の受入基準 → Issue の「完了条件」
+   - `plan.md` の技術判断 → Issue の「関連ファイル・コンポーネント」「検証方法」
+   - `docs/research/` → Issue の「参考パターン」
+3. Issue 1 件 = 独立して PR にできる作業単位（例: 旧 `tasks.md` の T101 相当の粒度）
+4. Issue タイトル先頭に対象 feature を `[001-mabiki-mvp]` の形で付ける
+5. 並列実行可能・依存関係は Issue 本文に記述（マイルストーンや個別 Issue の参照で表現）
+
+> Issue を切り出す前に **必ず `spec.md` の `[NEEDS CLARIFICATION]` を解消する**（Constitution 原則 8）。
 
 ---
 
 ## 4. Constitution（憲法）
 
-`memory/constitution.md` に置く、**全生成コードを律する原則**。Spec Kit のデフォルトは以下のような条項を含む（プロジェクトに合わせて取捨選択・改変する）:
+Mabiki の全 SDD アーティファクトを律する原則は [docs/guides/constitution.md](./constitution.md) に集約されている。
 
-- **Library-First**: 機能はまず独立した再利用可能なライブラリとして始める
-- **CLI Interface**: 機能はテキスト/JSON を入出力する CLI として公開する
-- **Test-First**: 実装コードを書く前に「テストを書く → ユーザー承認 → テストが失敗することを確認」を必須とする
-- **Simplicity / Anti-Abstraction**: 初期プロジェクト数を最小に保ち、フレームワークを直接使う（過剰なラッパーを避ける）
-- **Integration-First Testing**: モックより実DB・実サービスを優先し、実装前に契約テストを課す
+各フェーズで参照する場面:
 
-> **Mabiki での注意**: 上記はあくまで Spec Kit のデフォルト原則であり、Next.js/フロントエンド中心の本プロジェクトには「Library-First」「CLI Interface」がそのまま当てはまらない。憲法は**プロジェクト固有に書き換えるべき**もの。Mabiki では「デジタル摩擦を効率化で薄めない」「自動化を安易に足さない」といった**プロダクト原則**を憲法に据えるのが有効。
-
----
-
-## 5. Spec Kit のセットアップ（任意）
-
-ガイドの方法論だけでも運用できるが、スラッシュコマンドによる自動化を使いたい場合は Spec Kit CLI を導入する。
-
-### 前提
-
-- [uv](https://docs.astral.sh/uv/)（Python パッケージマネージャ）
-- Python 3.11+
-- Git
-- Claude Code
-
-### 初期化
-
-```bash
-# カレントディレクトリに Claude Code 連携で初期化
-uvx --from git+https://github.com/github/spec-kit.git specify init . --integration claude
-```
-
-- 旧 `--ai claude` フラグは非推奨（警告が出て `--integration` にマップされる）。
-- Claude Code 連携は **スキルベース**で、関連スキルが `.claude/skills` にインストールされる。
-- 生成されるディレクトリ: `.specify/`（設定・コマンド）、`specs/`（仕様アーティファクト）、`memory/`（憲法などのコンテキスト）。
-
-> **導入は任意**。本リポジトリでは既に `specs/001-mabiki-mvp/` を手動の SDD アーティファクトとして用意している。CLI 導入時は既存構成と整合させること。
-
-### スラッシュコマンド一覧
-
-| コマンド | 目的 |
+| フェーズ | Constitution の使い方 |
 |---|---|
-| `/speckit.constitution` | プロジェクトの統治原則・開発ガイドラインを確立 |
-| `/speckit.specify` | 要件・ユーザーストーリーを定義（技術ではなく What に集中） |
-| `/speckit.clarify` | 構造化された質問で過小仕様の領域を解消 |
-| `/speckit.plan` | 採用技術スタックを含む技術実装戦略を作成 |
-| `/speckit.tasks` | 計画から実行可能で順序付けされたタスク分解を生成 |
-| `/speckit.analyze` | 実装前にアーティファクト間の整合性を検証 |
-| `/speckit.checklist` | カスタム品質検証チェックリストを構築 |
-| `/speckit.implement` | 全タスクを実行して機能を構築 |
+| Specify | 摩擦設計に Why と研究根拠が書けているか（原則 1〜4, 7） |
+| Clarify | `[NEEDS CLARIFICATION]` を残したまま進めない（原則 8） |
+| Plan | `plan.md` の Constitution Check セクションで各原則を照合（全原則） |
+| Implement | Issue 化前・PR 前のセルフレビューで再度照合（特に原則 6, 7） |
 
-### 推奨実行順
-
-1. `specify init`（初期化）
-2. `/speckit.constitution`
-3. `/speckit.specify`
-4. `/speckit.clarify`
-5. `/speckit.plan`
-6. `/speckit.tasks`
-7. `/speckit.analyze`（任意だが推奨）
-8. `/speckit.implement`
+**逸脱は禁止しないが、`plan.md` で明示的に正当化すること。** 暗黙の逸脱は禁止する。
 
 ---
 
-## 6. 本リポジトリでの運用ルール
+## 5. 運用ルール
 
-CLI を導入してもしなくても、以下を共通ルールとする。
-
-### ディレクトリ規約
+### 5.1 ディレクトリ規約
 
 ```
 docs/
-  guides/spec-driven-development.md   # 本ガイド（SDD の進め方）
-  research/                           # BuJo メソッド調査（仕様の根拠資料）
+  README.md                          # ドキュメント全体の見取り図
+  guides/
+    spec-driven-development.md       # 本ガイド
+    constitution.md                  # Mabiki 憲法（全 SDD の判断基準）
+  research/                          # BuJo メソッド調査（仕様の哲学的根拠）
   specs/
-    <NNN>-<feature-slug>/             # 機能単位の仕様
-      spec.md                         # What / Why
-      plan.md                         # How
-      tasks.md                        # タスク分解
+    <NNN>-<feature-slug>/            # 機能単位の仕様
+      spec.md                        # What / Why
+      plan.md                        # How
       （必要に応じて）data-model.md, contracts/, research.md
-memory/
-  constitution.md                     # プロジェクト憲法（導入時）
+.claude/
+  skills/
+    creating-github-issue/           # spec/plan から Issue を切り出す skill
 ```
 
 - 機能は `001`, `002`, ... と連番でディレクトリを切る。
-- 各機能はブランチ `NNN-<feature-slug>` で進める（Spec Kit 慣習）。
+- ブランチ命名は `NNN-<feature-slug>` を推奨（個人開発のため強制ではない）。
 
-> **Spec Kit CLI を導入する場合の注意**: `specify init` はリポジトリ直下に `specs/` を生成する。本プロジェクトは仕様を `docs/specs/` に置く方針のため、CLI 導入時は生成先を `docs/specs/` に揃えるか、生成された `specs/` の内容を `docs/specs/` へ移すこと。
+### 5.2 フェーズゲート（セルフレビュー）
 
-### フェーズゲート（人間のレビューポイント）
+個人開発のため形式的な承認プロセスは置かないが、**フェーズの境目で必ず立ち止まる**ことを運用ルールとする。
 
-実装中ではなく**フェーズの境目でレビューする**のが SDD の肝。承認のオーバーヘッドとコンテキストスイッチを最小化できる。
+| 移行 | ゲート |
+|---|---|
+| Specify → Plan | spec.md の自己レビューチェックリストを通過。`[NEEDS CLARIFICATION]` ゼロ。 |
+| Plan → Implement | plan.md の Constitution Check を完了。逸脱は正当化済み。 |
+| Issue 切り出し → 実装 | Issue 本文の必須項目（概要・作業内容・完了条件・検証方法）が埋まっている。 |
 
-1. `spec.md` を承認してから `plan.md` へ
-2. `plan.md` を承認してから `tasks.md` へ
-3. `tasks.md` を承認してから実装へ
+ゲート通過の記録は **コミットメッセージ** に残す（例: `docs(spec): clarify migration policy and pass spec→plan gate`）。
 
-### 仕様の書き方の原則
+### 5.3 仕様の書き方の原則
 
 - **What/Why と How を混ぜない**（spec は What、plan は How）。
-- **曖昧さは `[NEEDS CLARIFICATION]` で明示**し、推測で埋めない（→ 本プロジェクトの CLAUDE.md「推測で進めない。確認してから進める」と一致）。
-- **投機的機能を書かない**（YAGNI）。
-- 仕様変更が起きたら、下流（plan → tasks → code）を再生成して整合を取る。
+- **曖昧さは `[NEEDS CLARIFICATION]` で明示**し、推測で埋めない（Constitution 原則 8）。
+- **投機的機能を書かない**（YAGNI）。Constitution の Explicit Non-Goals（原則 6）に該当する機能は最初から排除する。
+- **摩擦には必ず Why と研究根拠を添える**（原則 2, 3）。
+- 仕様変更が起きたら、下流（plan → Issue → code）を **必ず追従させる**。spec.md の変更がコミットに含まれるなら、影響範囲を同一 PR / 直後の PR で更新する。
+
+### 5.4 Claude Code との接続
+
+- **Issue 切り出し**: `.claude/skills/creating-github-issue` を使う。
+- **実装**: Issue を Claude Code に渡し、Issue 本文の「作業内容」を順に実行させる。
+- **不明点が出たとき**: Claude Code は推測せず `AskUserQuestion` で確認する（`.claude/CLAUDE.md` の方針と Constitution 原則 8 が整合）。
+- **PR レビュー**: 個人開発のため自己レビュー。Constitution Check を再度走らせ、逸脱があれば差し戻す。
+
+---
+
+## 6. 既存仕様（リファレンス）
+
+`docs/specs/001-mabiki-mvp/` は、Mabiki 流 SDD の最初の実例。**新しい feature を起こすときの構造リファレンス**として参照する。
+
+- [001-mabiki-mvp/spec.md](../specs/001-mabiki-mvp/spec.md) — What/Why と摩擦設計の書き方の見本（§5 摩擦設計の研究根拠、§7 Clarifications 解消ログを含む）
+- [001-mabiki-mvp/plan.md](../specs/001-mabiki-mvp/plan.md) — How と Constitution Check の見本
 
 ---
 
 ## 7. 参考リンク
 
-- [GitHub Spec Kit (リポジトリ)](https://github.com/github/spec-kit)
-- [Spec Kit ドキュメント](https://github.github.com/spec-kit/)
-- [SDD 方法論 (spec-driven.md)](https://github.com/github/spec-kit/blob/main/spec-driven.md)
-- [Diving Into Spec-Driven Development With GitHub Spec Kit (Microsoft for Developers)](https://developer.microsoft.com/blog/spec-driven-development-spec-kit)
-- [Implement Spec-Driven Development using the GitHub Spec Kit (Microsoft Learn)](https://learn.microsoft.com/en-us/training/modules/spec-driven-development-github-spec-kit-enterprise-developers/)
+- [GitHub Spec Kit](https://github.com/github/spec-kit) — Mabiki の SDD 運用のベースになっている方法論
+- [Spec-Driven Development (spec-driven.md)](https://github.com/github/spec-kit/blob/main/spec-driven.md) — SDD の理念
+- [Mabiki Constitution](./constitution.md) — 本プロジェクトの判断基準
+- [docs/research/](../research/) — BuJo メソッド調査（摩擦設計の哲学的根拠）
