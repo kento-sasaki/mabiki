@@ -1,0 +1,83 @@
+name: タスク / 開発チケット
+description: Mabiki の開発タスクや実装内容を記録するためのテンプレートです（SDD ベース）。
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 📝 概要
+      description: このタスクで何をするかを 1〜2 文で簡潔に説明してください。
+      placeholder: 例）BulletItem の signifier（・/ ○ / ー）切り替え UI を実装する
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 🎯 背景・目的
+      description: なぜこのタスクが必要なのかを説明してください。対応する spec / plan / tasks の該当箇所への参照も歓迎します。
+      placeholder: |
+        例）`docs/specs/001-mabiki-mvp/spec.md` の「捨てる摩擦」要件では、
+        ユーザーが意図的にタスクを「・→ー（中止）」へ切り替える操作が必要。
+        現状はタップ操作のみで signifier 切り替えができないため、デジタル摩擦の体験が成立しない。
+
+  - type: textarea
+    id: related_files
+    attributes:
+      label: 📁 関連ファイル・コンポーネント
+      description: 変更・参照が予想されるファイルやコンポーネント、対応する SDD アーティファクトを記載してください。
+      placeholder: |
+        - docs/specs/001-mabiki-mvp/spec.md — 該当ユーザーストーリー
+        - docs/specs/001-mabiki-mvp/plan.md — 該当コンポーネント設計
+        - docs/specs/001-mabiki-mvp/tasks.md — 紐付くタスク ID
+        - src/components/BulletItem/ — (新規作成) signifier 切り替え UI
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: ✅ 作業内容
+      description: 具体的な作業項目をチェックボックス付きでリストアップしてください。
+      placeholder: |
+        - [ ] コンポーネントの実装
+        - [ ] テストの追加
+        - [ ] spec / plan の該当箇所と整合しているか確認
+      value: |
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: 🏁 完了条件
+      description: このタスクが「完了」とみなされる客観的条件を記述してください。spec.md の受入基準と矛盾しないようにしてください。
+      placeholder: |
+        - signifier をタップ＋長押しで切り替えられる
+        - 切り替え時に確認モーダルが挟まる（=「デジタル摩擦」が成立している）
+        - spec.md の受入基準 AC-3 を満たす
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: 🔍 検証方法
+      description: 実装が正しく動作することを確認する手順を記載してください（検証コマンドが未整備の段階では手動手順で可）。
+      placeholder: |
+        1. `npm run dev` でアプリを起動する
+        2. 任意の BulletItem を長押しして signifier 切り替えメニューを表示する
+        3. 「ー」を選択し、確認モーダルが表示されることを確認する
+        4. キャンセル後、元の signifier が保持されていることを確認する
+
+  - type: textarea
+    id: reference_patterns
+    attributes:
+      label: 🧩 参考パターン
+      description: 実装時に参考にすべき既存コード・SDD ドキュメント・調査資料を記載してください。
+      placeholder: |
+        - docs/research/04-signifiers-and-bullets.md — signifier の意味体系
+        - docs/research/10-digital-implementation-considerations.md — デジタル化時の摩擦設計
+        - docs/guides/spec-driven-development.md — SDD のフェーズと成果物
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 🔗 参考情報
+      description: 関連する Issue、PR、外部ドキュメントなどのリンクを記載してください。
