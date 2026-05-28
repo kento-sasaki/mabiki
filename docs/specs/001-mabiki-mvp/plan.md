@@ -15,6 +15,30 @@
 
 > ⚠️ spec.md の **Clarifications が未解消**。本計画は暫定の既定値（下記「設計判断」に明記）で記述しており、確定後に更新する。
 
+## Constitution Check
+
+→ 判定基準は [docs/guides/constitution.md](../../guides/constitution.md)。本計画が Mabiki 憲法の各原則に整合しているかをチェックする。
+
+| # | 原則 | 判定 | 根拠 / 備考 |
+|---|---|---|---|
+| 1 | Friction is a Feature | ✅ OK | spec §5 で摩擦が中核機能として設計（自動繰り越しなし・コピペ禁止・演出付き削除）。本書 §6 でその実装方針を踏襲 |
+| 2 | The Why First | ✅ OK | spec §2「背景・狙い」と §5 摩擦設計表の「狙い」列で各機能の Why を明記 |
+| 3 | Grounded in BuJo Research | ✅ OK | spec §5「摩擦設計の研究根拠」サブセクションで `docs/research/02, 06, 10` への根拠リンクを整備済み |
+| 4 | Decision-Point Friction | ✅ OK | 摩擦は移行・削除・振り返りの意思決定点に集約。完了操作（US-1）は本書 §5 `completeTask` で摩擦なし |
+| 5 | Mobile-First | ✅ OK | spec §6「スマホファースト」、本書 §2 で Next.js (App Router) を採用しスマホ縦持ちを最優先 |
+| 6 | Explicit Non-Goals | ✅ OK | spec §3 Out of Scope に自動繰り越し・一括移動・D&D・コピペ移行を明示禁止。本書はそれらを実装しない |
+| 7 | No Speculative Friction | ✅ OK | spec §5 のすべての摩擦に Why と研究根拠が紐づく。本書で追加の摩擦を投機的に足していない |
+| 8 | Don't Guess, Ask or Clarify | ⚠️ 逸脱（暫定） | spec §7 に `[NEEDS CLARIFICATION]` が 6 件残存。本書 §3 で暫定既定値として提案中。Implement（Issue 化）着手前に必ず解消する |
+
+### 逸脱の正当化
+
+**原則 8（Don't Guess）の暫定逸脱**
+
+- 逸脱内容: spec.md §7 の Clarifications 6 件が未解消の状態で plan を作成
+- 理由: plan の暫定既定値を提示することで Clarifications の議論材料を提供するため（本書 §3 は「決定」ではなく「提案」）
+- 代替案を検討した結果: Clarifications を先に解消する正攻法もあるが、提案ベースのほうが選択肢が具体化し議論しやすいと判断
+- 受容するトレードオフ: 本計画の確定は Clarifications 解消後にずれる。**Issue 化（Implement 着手）前に必ず Clarifications を解消し、本 Check を更新する**
+
 ## 2. 技術スタック
 
 | 領域 | 採用 | 備考 |
@@ -113,10 +137,12 @@ model Task {
 - **Anti-Abstraction**: Prisma / Framer Motion を直接使い、独自ラッパーを早期に作らない。
 - **検証優先**: コア摩擦（再入力・切り落とし）の触感を **Storybook で先に確認** してから DB 結線する。
 
-## 8. フェーズ内訳（→ 詳細は [tasks.md](./tasks.md)）
+## 8. フェーズ内訳（→ 個別タスクは GitHub Issue で管理）
 
 - **Sprint 1**: コア・インタラクションの検証（UIのみ、`useState` モック、DB なし）
 - **Sprint 2**: 振り返り画面のプロトタイプ（Prisma 結線、最小フロー）
+
+> Mabiki では `tasks.md` を持たず、本書から **GitHub Issue** を直接切り出してタスクを管理する。Issue 作成は `.claude/skills/creating-github-issue` を使い、本書 §4〜§7 の内容を Issue 本文に反映する。運用は [SDD ガイド](../../guides/spec-driven-development.md) を参照。
 
 ## 9. 付随ドキュメント（必要に応じて追加）
 
