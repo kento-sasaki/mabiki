@@ -2,8 +2,8 @@
 
 **Feature ID**: 001
 **対応 spec**: [spec.md](./spec.md)
-**Status**: Draft（spec.md の Clarifications 解消後に確定）
-**最終更新**: 2026-05-25
+**Status**: 確定（spec §7 Clarifications 解消済み）
+**最終更新**: 2026-05-29
 
 > 本ドキュメントは **How** を扱う。What/Why は [spec.md](./spec.md) を参照。
 
@@ -13,7 +13,22 @@
 
 [spec.md](./spec.md) の検証対象は2つのコア・インタラクション（捨てる / 移行する）と、それらを束ねるイブニングリチュアル。MVP の主眼は **「摩擦の触感」のドッグフーディング検証** であり、機能網羅より体験の質を優先する。
 
-> ⚠️ spec.md の **Clarifications が未解消**。本計画は暫定の既定値（下記「設計判断」に明記）で記述しており、確定後に更新する。
+## Constitution Check
+
+→ 判定基準は [docs/guides/constitution.md](../../guides/constitution.md)。本計画が Mabiki 憲法の各原則に整合しているかをチェックする。
+
+| # | 原則 | 判定 | 根拠 / 備考 |
+|---|---|---|---|
+| 1 | Friction is a Feature | ✅ OK | spec §5 で摩擦が中核機能として設計（自動繰り越しなし・コピペ禁止・演出付き削除）。本書 §6 でその実装方針を踏襲 |
+| 2 | The Why First | ✅ OK | spec §2「背景・狙い」と §5 摩擦設計表の「狙い」列で各機能の Why を明記 |
+| 3 | Grounded in BuJo Research | ✅ OK | spec §5「摩擦設計の研究根拠」サブセクションで `docs/research/02, 06, 10` への根拠リンクを整備済み |
+| 4 | Decision-Point Friction | ✅ OK | 摩擦は移行・削除・振り返りの意思決定点に集約。完了操作（US-1）は本書 §5 `completeTask` で摩擦なし |
+| 5 | Mobile-First | ✅ OK | spec §6「スマホファースト」、本書 §2 で Next.js (App Router) を採用しスマホ縦持ちを最優先 |
+| 6 | Explicit Non-Goals | ✅ OK | spec §3 Out of Scope に自動繰り越し・一括移動・D&D・コピペ移行を明示禁止。本書はそれらを実装しない |
+| 7 | No Speculative Friction | ✅ OK | spec §5 のすべての摩擦に Why と研究根拠が紐づく。本書で追加の摩擦を投機的に足していない |
+| 8 | Don't Guess, Ask or Clarify | ✅ OK | spec §7 の Clarifications 6 件はすべて解消済み。本書 §3 の設計判断もそれに準拠 |
+
+逸脱なし。Implement（Issue 化）に進んでよい状態。
 
 ## Constitution Check
 
@@ -48,22 +63,22 @@
 | Backend / DB | Prisma + PostgreSQL | |
 | コンポーネント QA | Storybook, Chromatic | 摩擦の触感を単体で検証 |
 
-## 3. 設計判断（暫定の既定値 — Clarifications 解消で確定）
+## 3. 設計判断（spec §7 Clarifications の解消結果）
 
-| 項目 | 暫定既定値 | 根拠 | 対応する Clarification |
-|---|---|---|---|
-| 削除方式 | MVP は **物理削除**（最シンプル） | 旧 02 ドラフト推奨。復元不可の潔さを最短で実現 | 削除の方式 |
-| 移行の一致判定 | **完全一致は強制しない**（納得した内容で確定可） | 入力の自由度を残しつつ「打ち直し」摩擦は維持 | 移行の一致判定 |
-| イブニングリチュアル | 起動は **任意**（強制動線は後続スパン） | MVP は体験検証が目的。強制度はUX検証後に判断 | リチュアルの強制度 |
-| ユーザー/認証 | **シングルユーザー**（ドッグフーディング） | `userId` 列は持つが認証は組まない | ユーザー/認証 |
-| バレット種別 | MVP は **Task のみ** | コア摩擦の検証に種別は不要 | バレット種別 |
-| 移行先 | 常に **今日** | 日付指定は後続 | 移行先の指定 |
+| 項目 | 採用 | 根拠 |
+|---|---|---|
+| 削除方式 | **論理削除（`deletedAt` で隠す）** | UI 上は復元不可（潔さ）、DB には痕跡を残してトラブルシュートと将来分析の余地を残す |
+| 移行の一致判定 | **完全一致は強制しない**（納得した内容で確定可） | コピペ禁止＋手動再入力で摩擦は成立。完全一致強制は「自分の言葉で再構築する」効果を阻害 |
+| イブニングリチュアル | 起動は **任意** | MVP は体験検証が目的。強制度はドッグフーディング後に判断（Kaizen） |
+| ユーザー/認証 | **シングルユーザー** | `userId` 列は将来のために保持。認証機構は組まない |
+| バレット種別 | **Task のみ** | コア摩擦の検証に種別は不要 |
+| 移行先 | 常に **今日** | 任意日付への先送りは意思決定の先送りを許す（Constitution 原則 1 と矛盾） |
 
-> これらは **plan の提案であって決定ではない**。spec.md レビュー時に確定すること。
+> 各項目の詳細根拠は [spec.md §7](./spec.md) を参照。
 
-## 4. データモデル（暫定）
+## 4. データモデル
 
-PostgreSQL / Prisma。シングルユーザー・Task のみ・物理削除の暫定既定値に沿う。
+PostgreSQL / Prisma。シングルユーザー・Task のみ・論理削除（`deletedAt`）の確定値に沿う。
 
 ```prisma
 enum TaskStatus {
@@ -80,6 +95,7 @@ model Task {
   date      DateTime    // どの日のログに属するか (YYYY-MM-DD)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  deletedAt DateTime?   // 「捨てる（Mabiki）」で設定。UI 上は復元不可
 
   // 移行の追跡（移行先が移行元を参照）
   sourceTaskId String?  @unique
@@ -87,20 +103,21 @@ model Task {
   migratedTo   Task?    @relation("MigrationHistory")
 
   @@index([userId, date])
+  @@index([deletedAt])
 }
 ```
 
-> **削除を「物理削除」にする場合** `deletedAt` は不要。spec の Clarification で「一方向の論理削除」に決まったら `deletedAt DateTime?` を追加し、クエリに `deletedAt == null` 条件を足す。
+> すべての読み取りクエリには `deletedAt: null` 条件を必ず付ける。共通の Prisma extension またはリポジトリ層で強制する（実装時 Issue で詰める）。
 
 ## 5. API 設計（Next.js App Router / Server Actions 想定）
 
 | エンドポイント / アクション | 概要 | 主な条件・処理 |
 |---|---|---|
-| `getDailyLog(date)` | 指定日の表示用タスク一覧 | `userId == current && date == 指定日` |
-| `getPendingForRitual()` | 前日以前の未完了タスクを古い順に | `date < 今日 && status == INCOMPLETE` |
+| `getDailyLog(date)` | 指定日の表示用タスク一覧 | `userId == current && date == 指定日 && deletedAt == null` |
+| `getPendingForRitual()` | 前日以前の未完了タスクを古い順に | `date < 今日 && status == INCOMPLETE && deletedAt == null` |
 | `migrateTask(id, content)` | 移行（トランザクション） | ①元タスク `status = MIGRATED` ②新タスクを `date=今日, status=INCOMPLETE, sourceTaskId=元id` で作成 |
 | `completeTask(id)` | 完了 | `status = COMPLETE`（摩擦なし） |
-| `deleteTask(id)` | 捨てる（Mabiki） | 物理削除 `db.task.delete()`（暫定既定値） |
+| `deleteTask(id)` | 捨てる（Mabiki） | `deletedAt = now()`（論理削除）。UI から復元手段は提供しない |
 
 ## 6. フロントエンド実装のポイント
 
@@ -125,7 +142,7 @@ model Task {
 
 ### 6.2 切り落とし演出（Framer Motion）
 
-「捨てる」時、`AnimatePresence` を使い、要素が斜めにスライドしながらフェードアウト（ハサミで切られて落ちる）する。
+「捨てる」時、`AnimatePresence` を使い、要素が斜めにスライドしながらフェードアウト（ハサミで切られて落ちる）する。演出完了時に `deleteTask` を呼ぶ。
 
 ### 6.3 モード分離
 
