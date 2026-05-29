@@ -14,7 +14,7 @@ body:
     id: background
     attributes:
       label: 🎯 背景・目的
-      description: なぜこのタスクが必要なのかを説明してください。対応する spec / plan / tasks の該当箇所への参照も歓迎します。
+      description: なぜこのタスクが必要なのかを説明してください。対応する spec / plan や関連資料の該当箇所への参照も歓迎します。
       placeholder: |
         例）`docs/specs/001-mabiki-mvp/spec.md` の「捨てる摩擦」要件では、
         ユーザーが意図的にタスクを「・→ー（中止）」へ切り替える操作が必要。
@@ -28,7 +28,6 @@ body:
       placeholder: |
         - docs/specs/001-mabiki-mvp/spec.md — 該当ユーザーストーリー
         - docs/specs/001-mabiki-mvp/plan.md — 該当コンポーネント設計
-        - docs/specs/001-mabiki-mvp/tasks.md — 紐付くタスク ID
         - src/components/BulletItem/ — (新規作成) signifier 切り替え UI
 
   - type: textarea
